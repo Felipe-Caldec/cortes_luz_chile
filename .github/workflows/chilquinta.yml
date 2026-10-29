@@ -32,10 +32,10 @@ jobs:
         run: python -m playwright install --with-deps chromium
 
       - name: Interrupciones
-        run: python chilquinta_interrupciones.py
+        run: python chilquinta_cortes.py
 
       - name: Guardar
         run: |
           bash .github/scripts/guardar.sh \
             "Chilquinta: lectura $(TZ=America/Santiago date '+%Y-%m-%d %H:%M')" \
-            chilquinta_interrupciones.csv
+            chilquinta_cortes.csv

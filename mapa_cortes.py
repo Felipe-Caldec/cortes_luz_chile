@@ -27,7 +27,7 @@ from pathlib import Path
 import folium
 from folium.plugins import MarkerCluster
 
-from enel_cortes_comunas import TZ, URL as URL_COMUNAS, a_tabla, descargar, nombre_oficial
+from enel_cortes import TZ, URL as URL_COMUNAS, a_tabla, descargar, nombre_oficial
 
 URL_ZONAS = "https://mapaemergencia.enel.com/galeria/documento/me-capa-trafosAfectados.txt"
 URL_AVISOS = "https://mapaemergencia.enel.com/galeria/documento/me-capa-avisos.txt"

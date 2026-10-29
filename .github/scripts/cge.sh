@@ -19,9 +19,9 @@ MAX_HORAS_SIN_DATOS="${MAX_HORAS_SIN_DATOS:-12}"
 API="repos/${GITHUB_REPOSITORY}/actions/workflows/${REINTENTO}"
 ahora_cl() { TZ=America/Santiago date '+%Y-%m-%d %H:%M'; }
 
-if python cge_interrupciones.py --geojson; then
+if python cge_cortes.py --geojson; then
   bash .github/scripts/guardar.sh "CGE: lectura $(ahora_cl)" \
-    cge_interrupciones.csv cge_geocache.csv cge_ultima_lectura.txt mapas || exit 1
+    cge_cortes.csv cge_geocache.csv cge_ultima_lectura.txt mapas || exit 1
 
   estado=$(gh api "$API" --jq .state 2>/dev/null || echo "desconocido")
   if [ "$estado" = "active" ]; then

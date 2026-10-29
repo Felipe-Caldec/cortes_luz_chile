@@ -1,4 +1,0 @@
-requests
-pandas
-playwright
-folium

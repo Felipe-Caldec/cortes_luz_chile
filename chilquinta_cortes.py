@@ -28,31 +28,22 @@ def reposicion_a_fecha(valor, ahora):
 
 
 playwright = sync_playwright().start()
-browser = playwright.chromium.launch()
+browser = playwright.chromium.launch(headless=False)
 page = browser.new_page()
-page.goto("https://www.chilquinta.cl/interrupciones")
+page.goto("https://www.sec.cl/interrupciones-en-linea/?view_full_site=true#1566339203079-e74d6aa8-74c0")
 
-tutorial = page.locator("div.map-tutorial")
+"""tutorial = page.locator("div.map-tutorial")
 try:
     tutorial.wait_for(state="visible", timeout=5000)
     tutorial.get_by_text("Saltar").click()
     tutorial.wait_for(state="hidden")
 except Exception:
-    pass  # si no aparece, seguimos normal
+    pass """ # si no aparece, seguimos normal
 
 ahora = datetime.now()
 clientes_sin_luz = []
 
-try:
-    page.wait_for_selector("article", timeout=60_000)
-except PWTimeout:
-    page.screenshot(path="debug_chilquinta.png", full_page=True)
-    with open("debug_chilquinta.html", "w", encoding="utf-8") as f:
-        f.write(page.content())
-    print("No apareció ningún <article>. URL:", page.url)
-    print("Texto de la página:\n", page.inner_text("body")[:2000])
-    raise
-
+page.wait_for_selector("article", timeout=60_000)
 articles = page.locator("article")
 cantidad = articles.count()
 
@@ -91,7 +82,7 @@ for i in range(cantidad):
 browser.close()
 playwright.stop()
 
-with open("chilquinta_interrupciones.csv", "a", newline="", encoding="utf-8-sig") as f:
+with open("chilquinta_interrupciones2.csv", "a", newline="", encoding="utf-8-sig") as f:
     writer = csv.writer(f, delimiter=";")
     if f.tell() == 0:
         writer.writerow(["Momento", "Zona", "Tipo", "Clientes afectados", "Sectores",

@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  SCRIPT: sec_interrupciones.py          # cambia aquí si el archivo tiene otro nombre
+  SCRIPT: sec_cortes.py          # cambia aquí si el archivo tiene otro nombre
   HISTORIAL: sec_clientes_afectados.csv
 
 jobs:

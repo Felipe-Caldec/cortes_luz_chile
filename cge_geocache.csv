@@ -1,0 +1,25 @@
+clave_geo;comuna;cod_comuna;region;sector
+-37.4815_-72.3727;Los Ángeles;08301;Región del Biobío;Altos del Retiro Sur
+-34.2218_-70.8094;Olivar;06111;Región del Libertador General Bernardo O'Higgins;El Molino
+-36.9593_-72.8679;Hualqui;08105;Región del Biobío;Cerro Alto
+-31.6622_-71.3018;Illapel;04201;Región de Coquimbo;Coyuntagua Norte
+-35.0567_-71.3046;Sagrada Familia;07307;Región del Maule;Cerrillos
+-33.8830_-71.3943;San Pedro;13505;Región Metropolitana de Santiago;El Sauce
+-34.7889_-71.5134;Lolol;06304;Región del Libertador General Bernardo O'Higgins;Palmilla del Rosal
+-29.9475_-71.3479;Coquimbo;04102;Región de Coquimbo;Villa Violeta Parra
+-29.8888_-71.2345;La Serena;04101;Región de Coquimbo;Villa San Bartolomé
+-28.4695_-71.2176;Huasco;03304;Región de Atacama;
+-33.7739_-71.3014;Melipilla;13501;Región Metropolitana de Santiago;Las Acacias
+-18.4877_-70.2749;Arica;15101;Región de Arica y Parinacota;
+-33.8878_-71.3894;San Pedro;13505;Región Metropolitana de Santiago;Los Culenes
+-29.9486_-71.3474;Coquimbo;04102;Región de Coquimbo;Villa Violeta Parra
+-34.7852_-71.5549;Lolol;06304;Región del Libertador General Bernardo O'Higgins;Los Chacaicillos
+-34.4214_-71.1157;San Vicente de Tagua Tagua;06117;Región del Libertador General Bernardo O'Higgins;La Posada
+-27.3679_-70.3133;Copiapó;03101;Región de Atacama;El Palomar
+-27.3799_-70.3389;Copiapó;03101;Región de Atacama;Rosario
+-34.4139_-71.3748;Pichidegua;06113;Región del Libertador General Bernardo O'Higgins;San Luis
+-36.9622_-72.9334;Hualqui;08105;Región del Biobío;Rinconada de Hualqui
+-35.6401_-72.2555;Empedrado;07104;Región del Maule;
+-20.4998_-69.3412;Pica;01405;Región de Tarapacá;Resbaladero
+-22.4369_-68.8950;Calama;02201;Región de Antofagasta;Jalquinche
+-23.5702_-70.3861;Antofagasta;02101;Región de Antofagasta;Parque Juan López III

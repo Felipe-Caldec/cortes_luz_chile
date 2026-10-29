@@ -28,7 +28,7 @@ def reposicion_a_fecha(valor, ahora):
 
 
 playwright = sync_playwright().start()
-browser = playwright.chromium.launch(headless=False)
+browser = playwright.chromium.launch()
 page = browser.new_page()
 page.goto("https://www.chilquinta.cl/interrupciones")
 

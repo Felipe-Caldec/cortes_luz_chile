@@ -1,0 +1,41 @@
+name: Cortes Chilquinta cada 6 h
+
+on:
+  schedule:
+    # Cron en UTC: 00:20, 06:20, 12:20 y 18:20 en Chile con horario de verano
+    # (UTC-3). Con horario de invierno (UTC-4) corre una hora antes.
+    - cron: "20 3,9,15,21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chilquinta
+  cancel-in-progress: false
+
+jobs:
+  chilquinta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Instalar Chromium para Playwright
+        run: python -m playwright install --with-deps chromium
+
+      - name: Interrupciones
+        run: python chilquinta_interrupciones.py
+
+      - name: Guardar
+        run: |
+          bash .github/scripts/guardar.sh \
+            "Chilquinta: lectura $(TZ=America/Santiago date '+%Y-%m-%d %H:%M')" \
+            chilquinta_interrupciones.csv

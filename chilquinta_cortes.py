@@ -43,7 +43,7 @@ except Exception:
 ahora = datetime.now()
 clientes_sin_luz = []
 
-page.wait_for_selector("article")
+page.wait_for_selector("article", timeout=60_000)
 articles = page.locator("article")
 cantidad = articles.count()
 

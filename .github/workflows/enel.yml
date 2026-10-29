@@ -29,10 +29,10 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Comunas afectadas
-        run: python enel_cortes_comunas.py
+        run: python enel_cortes.py
 
       - name: Mapa de cortes
-        run: python mapa_cortes_esri.py
+        run: python mapa_cortes.py
 
       - name: Guardar
         run: |

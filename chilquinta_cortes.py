@@ -1,7 +1,7 @@
 import csv
 import re
 from datetime import datetime, timedelta
-
+from playwright.sync_api import TimeoutError as PWTimeout
 from playwright.sync_api import sync_playwright
 
 
@@ -43,7 +43,16 @@ except Exception:
 ahora = datetime.now()
 clientes_sin_luz = []
 
-page.wait_for_selector("article", timeout=90_000)
+try:
+    page.wait_for_selector("article", timeout=60_000)
+except PWTimeout:
+    page.screenshot(path="debug_chilquinta.png", full_page=True)
+    with open("debug_chilquinta.html", "w", encoding="utf-8") as f:
+        f.write(page.content())
+    print("No apareció ningún <article>. URL:", page.url)
+    print("Texto de la página:\n", page.inner_text("body")[:2000])
+    raise
+
 articles = page.locator("article")
 cantidad = articles.count()
 

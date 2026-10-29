@@ -1,0 +1,76 @@
+name: Clientes afectados SEC cada 6 h
+
+# Consulta la API de "Interrupciones en línea" de la SEC (clientes afectados
+# por comuna, todas las distribuidoras) y guarda el historial en el repo.
+# Autónomo: no depende de requirements.txt ni de .github/scripts/.
+on:
+  schedule:
+    # Cron en UTC: 00:50, 06:50, 12:50 y 18:50 en Chile con horario de verano
+    # (UTC-3). Con horario de invierno (UTC-4) corre una hora antes.
+    - cron: "50 3,9,15,21 * * *"
+  workflow_dispatch:
+    inputs:
+      hora:
+        description: "Hora a consultar (0-23). Vacío = hora actual de Chile"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sec
+  cancel-in-progress: false
+
+env:
+  SCRIPT: sec_interrupciones.py          # cambia aquí si el archivo tiene otro nombre
+  HISTORIAL: sec_clientes_afectados.csv
+
+jobs:
+  sec:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Instalar dependencias
+        run: pip install requests pandas
+
+      - name: Clientes afectados por comuna
+        env:
+          HORA: ${{ github.event.inputs.hora }}
+        run: |
+          if [ ! -f "$SCRIPT" ]; then
+            echo "::error::No existe $SCRIPT en la raíz del repo. Archivos .py: $(find . -maxdepth 1 -name '*.py' -printf '%f ')"
+            exit 1
+          fi
+          if [ -n "$HORA" ]; then
+            python "$SCRIPT" --hora "$HORA"
+          else
+            python "$SCRIPT"
+          fi
+
+      - name: Guardar en el repo
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$HISTORIAL"
+          if git diff --cached --quiet; then
+            echo "Sin cambios que guardar."
+            exit 0
+          fi
+          git commit -m "SEC: lectura $(TZ=America/Santiago date '+%Y-%m-%d %H:%M')"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash --quiet && git push --quiet; then
+              echo "Guardado."
+              exit 0
+            fi
+            echo "Push rechazado (intento $i/5); reintentando..."
+            sleep $((i * 10))
+          done
+          echo "::error::No se pudo hacer push después de 5 intentos."
+          exit 1

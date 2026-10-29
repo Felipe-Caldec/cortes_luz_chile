@@ -1,0 +1,37 @@
+name: Cortes CGE cada 6 h
+
+# Horario fijo. Si el mapa de CGE está caído, activa cge_reintento.yml, que
+# insiste cada 30 min hasta conseguir datos (ver .github/scripts/cge.sh).
+on:
+  schedule:
+    # Cron en UTC: 00:35, 06:35, 12:35 y 18:35 en Chile con horario de verano
+    # (UTC-3). Con horario de invierno (UTC-4) corre una hora antes.
+    - cron: "35 3,9,15,21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write   # commitear el historial
+  actions: write    # activar/desactivar cge_reintento.yml
+
+concurrency:
+  group: cge
+  cancel-in-progress: false
+
+jobs:
+  cge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Lectura CGE
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/cge.sh

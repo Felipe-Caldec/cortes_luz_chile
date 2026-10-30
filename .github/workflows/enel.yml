@@ -38,7 +38,7 @@ jobs:
 
       - name: Comunas afectadas
         id: comunas
-        run: python enel_cortes_comunas.py --csv "$CSV"
+        run: python enel_cortes.py --csv "$CSV"
 
       # Si el mapa falla, no impide guardar el CSV (queda como advertencia)
       - name: Mapa de cortes

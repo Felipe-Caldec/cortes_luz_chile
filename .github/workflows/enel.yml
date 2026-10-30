@@ -1,50 +1,37 @@
-name: Cortes Enel cada 6 h
+name: Cortes CGE cada 6 h
 
+# Horario fijo. Si el mapa de CGE está caído, activa cge_reintento.yml, que
+# insiste cada 30 min hasta conseguir datos (ver .github/scripts/cge.sh).
 on:
   schedule:
-    # GitHub usa hora UTC. Con Chile en UTC-3 (horario de verano) equivale a 00:05, 06:05, 12:05 y 18:05;
-    # en invierno (UTC-4) corre una hora antes. La columna "momento" del CSV siempre queda en hora de Chile.
-    - cron: "5 3,9,15,21 * * *"
-  workflow_dispatch:          # botón "Run workflow" para probarlo a mano
+    # Cron en UTC: 00:35, 06:35, 12:35 y 18:35 en Chile con horario de verano
+    # (UTC-3). Con horario de invierno (UTC-4) corre una hora antes.
+    - cron: "35 3,9,15,21 * * *"
+  workflow_dispatch:
 
 permissions:
-  contents: write             # para guardar el CSV en el repositorio
+  contents: write   # commitear el historial
+  actions: write    # activar/desactivar cge_reintento.yml
 
 concurrency:
-  group: cortes-enel
+  group: cge
   cancel-in-progress: false
 
 jobs:
-  leer:
+  cge:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
+          cache: pip
 
-      - name: Instalar dependencias
-        run: pip install requests pandas folium
+      - run: pip install -r requirements.txt
 
-      - name: Leer clientes sin luz por comuna
-        run: python enel_cortes.py
-
-      - name: Generar mapa
-        run: python mapa_cortes.py --historial --sin-avisos
-        continue-on-error: true    # si falla el mapa, igual se guarda el CSV
-
-      - name: Guardar en el repositorio
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add enel_cortes.csv                                  # el CSV siempre
-          for f in mapa_cortes.html mapas; do                       # el mapa solo si existe
-            if [ -e "$f" ]; then git add "$f"; fi
-          done
-          if git diff --cached --quiet; then
-            echo "::error::No hay cambios para guardar"; exit 1
-          fi
-          git commit -m "Lectura $(TZ=America/Santiago date '+%Y-%m-%d %H:%M')"
-          git push
+      - name: Lectura CGE
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/cge.sh

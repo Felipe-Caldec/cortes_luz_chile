@@ -1,24 +1,24 @@
-name: Cortes CGE cada 6 h
+name: Cortes Enel cada 6 h
 
-# Horario fijo. Si el mapa de CGE está caído, activa cge_reintento.yml, que
-# insiste cada 30 min hasta conseguir datos (ver .github/scripts/cge.sh).
 on:
   schedule:
-    # Cron en UTC: 00:35, 06:35, 12:35 y 18:35 en Chile con horario de verano
+    # Cron en UTC: 00:05, 06:05, 12:05 y 18:05 en Chile con horario de verano
     # (UTC-3). Con horario de invierno (UTC-4) corre una hora antes.
-    - cron: "35 3,9,15,21 * * *"
+    - cron: "5 3,9,15,21 * * *"
   workflow_dispatch:
 
 permissions:
-  contents: write   # commitear el historial
-  actions: write    # activar/desactivar cge_reintento.yml
+  contents: write
 
 concurrency:
-  group: cge
+  group: enel
   cancel-in-progress: false
 
+env:
+  CSV: enel_comunas.csv
+
 jobs:
-  cge:
+  enel:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -27,11 +27,44 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          cache: pip
 
-      - run: pip install -r requirements.txt
+      - name: Instalar dependencias
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install requests pandas
+          fi
 
-      - name: Lectura CGE
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: bash .github/scripts/cge.sh
+      - name: Comunas afectadas
+        id: comunas
+        run: python enel_cortes_comunas.py --csv "$CSV"
+
+      # Si el mapa falla, no impide guardar el CSV (queda como advertencia)
+      - name: Mapa de cortes
+        if: steps.comunas.outcome == 'success' && hashFiles('mapa_cortes_esri.py') != ''
+        continue-on-error: true
+        run: python mapa_cortes_esri.py
+
+      - name: Guardar en el repo
+        if: steps.comunas.outcome == 'success'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$CSV"
+          [ -d mapas ] && git add mapas
+          if git diff --cached --quiet; then
+            echo "::warning::El script corrió pero $CSV no cambió."
+            exit 0
+          fi
+          git commit -m "Enel: lectura $(TZ=America/Santiago date '+%Y-%m-%d %H:%M')"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash --quiet && git push --quiet; then
+              echo "Guardado."
+              exit 0
+            fi
+            echo "Push rechazado (intento $i/5); reintentando..."
+            sleep $((i * 10))
+          done
+          echo "::error::No se pudo hacer push después de 5 intentos."
+          exit 1

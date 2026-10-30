@@ -2,40 +2,49 @@ name: Cortes Enel cada 6 h
 
 on:
   schedule:
-    # Cron en UTC: 00:05, 06:05, 12:05 y 18:05 en Chile con horario de verano
-    # (UTC-3). Con horario de invierno (UTC-4) corre una hora antes.
+    # GitHub usa hora UTC. Con Chile en UTC-3 (horario de verano) equivale a 00:05, 06:05, 12:05 y 18:05;
+    # en invierno (UTC-4) corre una hora antes. La columna "momento" del CSV siempre queda en hora de Chile.
     - cron: "5 3,9,15,21 * * *"
-  workflow_dispatch:
+  workflow_dispatch:          # botón "Run workflow" para probarlo a mano
 
 permissions:
-  contents: write
+  contents: write             # para guardar el CSV en el repositorio
 
 concurrency:
-  group: enel
+  group: cortes-enel
   cancel-in-progress: false
 
 jobs:
-  enel:
+  leer:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
-          cache: pip
+          python-version: "3.12"
 
-      - run: pip install -r requirements.txt
+      - name: Instalar dependencias
+        run: pip install requests pandas folium
 
-      - name: Comunas afectadas
+      - name: Leer clientes sin luz por comuna
         run: python enel_cortes.py
 
-      - name: Mapa de cortes
-        run: python mapa_cortes.py
+      - name: Generar mapa
+        run: python mapa_cortes.py --historial --sin-avisos
+        continue-on-error: true    # si falla el mapa, igual se guarda el CSV
 
-      - name: Guardar
+      - name: Guardar en el repositorio
         run: |
-          bash .github/scripts/guardar.sh \
-            "Enel: lectura $(TZ=America/Santiago date '+%Y-%m-%d %H:%M')" \
-            enel_interrupciones.csv mapas
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add enel_cortes.csv                                  # el CSV siempre
+          for f in mapa_cortes.html mapas; do                       # el mapa solo si existe
+            if [ -e "$f" ]; then git add "$f"; fi
+          done
+          if git diff --cached --quiet; then
+            echo "::error::No hay cambios para guardar"; exit 1
+          fi
+          git commit -m "Lectura $(TZ=America/Santiago date '+%Y-%m-%d %H:%M')"
+          git push

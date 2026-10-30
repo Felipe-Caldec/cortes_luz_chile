@@ -45,7 +45,7 @@ import requests
 
 BASE = "https://mapa-afectaciones.grupocge.cl/afectaciones/"
 EMPRESA = "cge"
-HISTORIAL = "cge_interrupciones2.csv"
+HISTORIAL = "cge_interrupciones.csv"
 TZ = ZoneInfo("America/Santiago")
 NS = {"k": "http://www.opengis.net/kml/2.2"}
 
